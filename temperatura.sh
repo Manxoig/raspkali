@@ -1,3 +1,5 @@
+
+
 #!/bin/bash
  # Shell script: temp.sh
  # Autor: Santiago Crespo
@@ -5,6 +7,6 @@
  echo "$(date) @ $(hostname)"
  echo "-------------------------------------------"
  echo "Temp.CPU => $((cpu/1000))'Cº"
- echo "Temp.GPU => $(/opt/vc/bin/vcgencmd measure_temp)"
+# echo "Temp.GPU => $(/opt/vc/bin/vcgencmd measure_temp)"
  echo "-------------------------------------------"
  
