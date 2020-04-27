@@ -10,3 +10,4 @@
 # echo "Temp.GPU => $(/opt/vc/bin/vcgencmd measure_temp)"
  echo "-------------------------------------------"
  
+#esto se ejecuta en el  la pc 
