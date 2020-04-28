@@ -1,8 +1,7 @@
-
-
 #!/bin/bash
  # Shell script: temp.sh
  # Autor: Santiago Crespo
+ # modificado por manxoig
  cpu=$(cat /sys/class/thermal/thermal_zone0/temp)
  echo "$(date) @ $(hostname)"
  echo "-------------------------------------------"
