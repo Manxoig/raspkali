@@ -19,15 +19,21 @@ systemctl start bluetooth
 bluetoothctl power on
 echo ""
 echo "Buscando bluetooth"
-#hcitool scan
-echo "escribe default-agent" #default-agent esto va denotr el bluetoothctl ver como se hace
-echo "Escribe scan on" #escribe scan on 
+hcitool scan
+#echo "escribe default-agent" #default-agent esto va denotr el bluetoothctl ver como se hace
+bluetoolhctl defaul-agent
+#echo "Escribe scan on" #escribe scan on 
 #echo "buscar en la lista tu dispositivo"
 # primero hay q emparejar
+#print ingresar las mac del dispostivo 
+bluetoolhctl pair  2D:61:D3:BD:ED:DF
 # colocarlo como dispositivo de confianza
+bluetoolhctl trust  2D:61:D3:BD:ED:DF
 #luego hay q conectarlo
-
-bluetoothctl
+bluetoolhctl connect  2D:61:D3:BD:ED:DF
+# este comando es el super importante para q salga en el mixer de audio
+dmesg |grep bluetooth
+#bluetoothctl
 echo ""
 echo ".- -- .- / ... ..- .- .-.-."
 
