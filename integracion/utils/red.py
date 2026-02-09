@@ -1,4 +1,4 @@
-import requests, psutil
+import psutil, requests
 
 def obtener_ip_publica():
     try:
@@ -6,9 +6,15 @@ def obtener_ip_publica():
     except:
         return "No disponible"
 
-def velocidad_red(interface="eth0"):
+def listar_interfaces():
+    return list(psutil.net_if_addrs().keys())
+
+def velocidad_por_interfaz():
     net_io = psutil.net_io_counters(pernic=True)
-    if interface in net_io:
-        datos = net_io[interface]
-        return f"Enviados: {datos.bytes_sent} | Recibidos: {datos.bytes_recv}"
-    return "Interfaz no encontrada"
+    datos = {}
+    for iface, stats in net_io.items():
+        datos[iface] = {
+            "enviados": stats.bytes_sent,
+            "recibidos": stats.bytes_recv
+        }
+    return datos
