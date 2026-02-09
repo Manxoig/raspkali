@@ -1,42 +1,47 @@
 import tkinter as tk
-import psutil, requests, os, subprocess
-
-def obtener_ip_publica():
-    try:
-        return requests.get("https://ifconfig.me").text.strip()
-    except:
-        return "No disponible"
-
-def obtener_temperatura():
-    try:
-        salida = subprocess.check_output(["sensors"]).decode()
-        for linea in salida.splitlines():
-            if "temp1" in linea:
-                return linea.split()[1]
-        return "No detectada"
-    except:
-        return "No disponible"
+from utils import red, memoria, temperatura, procesos, servicios
 
 def actualizar_info():
-    cpu = psutil.cpu_percent()
-    ram = psutil.virtual_memory()
-    disco = psutil.disk_usage('/')
-    ip = obtener_ip_publica()
-    temp = obtener_temperatura()
+    # Datos básicos
+    ip = red.obtener_ip_publica()
+    temp = temperatura.temperatura_cpu()
+    ram = memoria.memoria_ram()
+    disco = memoria.almacenamiento()
+    vel_red = red.velocidad_red("eth0")
 
+    # Procesos principales
+    top_proc = procesos.procesos_principales(5)
+    proc_text = "\n".join([f"PID {pid} {name} - {cpu}%" for pid, name, cpu in top_proc])
+
+    # Estado de servicios críticos
+    servicios_list = ["ssh", "apache2", "mysql"]
+    serv_text = "\n".join([servicios.estado_servicio(s) for s in servicios_list])
+
+    # Texto final
     texto = f"""
     === RaspKali Monitor ===
     IP Pública: {ip}
-    CPU: {cpu}% | Temp: {temp}
-    RAM: {ram.percent}% ({ram.used//(1024**2)}MB / {ram.total//(1024**2)}MB)
-    Disco: {disco.percent}% usado ({disco.used//(1024**3)}GB / {disco.total//(1024**3)}GB)
-    """
-    label.config(text=texto)
-    root.after(3000, actualizar_info)
+    CPU Temp: {temp}
+    RAM: {ram}
+    Disco: {disco}
+    Red (eth0): {vel_red}
 
+    --- Procesos principales ---
+    {proc_text}
+
+    --- Servicios ---
+    {serv_text}
+    """
+
+    label.config(text=texto)
+    root.after(5000, actualizar_info)  # refresca cada 5 segundos
+
+# Ventana principal
 root = tk.Tk()
 root.title("RaspKali Monitor")
-label = tk.Label(root, font=("DejaVu Sans Mono", 10), justify="left")
-label.pack()
+label = tk.Label(root, font=("DejaVu Sans Mono", 10), justify="left", anchor="w")
+label.pack(padx=10, pady=10)
+
+# Inicia actualización
 actualizar_info()
 root.mainloop()
