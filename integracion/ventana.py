@@ -1,34 +1,30 @@
-import tkinter as tk
-import os, glob, sys
+import sys, os, glob
 from datetime import datetime, timedelta
 import configparser
+from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QVBoxLayout
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QFont, QColor, QPalette
 from utils import red, memoria, temperatura, procesos, servicios, puertos
 
-# === Leer archivo de configuración ===
+# === Leer configuración ===
 config = configparser.ConfigParser()
 if not config.read("config.ini"):
-    print("Error: No se encontró el archivo config.ini")
+    print("Error: No se encontró config.ini")
     sys.exit(1)
 
-# Validar valores
 def validar_config():
-    # Retención
     retencion = config.get("logs", "retencion", fallback=None)
     if retencion not in ["dia", "semana", "mes"]:
         print("Error en config.ini: 'retencion' debe ser 'dia', 'semana' o 'mes'")
         sys.exit(1)
-
-    # Intervalos
     for clave in ["intervalo_ip_puertos", "intervalo_red", "intervalo_proc_serv", "intervalo_sistema"]:
         try:
             valor = config.getint("widget", clave)
             if valor <= 0:
                 raise ValueError
         except:
-            print(f"Error en config.ini: '{clave}' debe ser un número entero positivo (segundos)")
+            print(f"Error en config.ini: '{clave}' debe ser un número entero positivo")
             sys.exit(1)
-
-    # Transparencia
     try:
         trans = config.getfloat("widget", "transparencia")
         if not (0.0 <= trans <= 1.0):
@@ -39,7 +35,7 @@ def validar_config():
 
 validar_config()
 
-# === Configuración del widget ===
+# === Configuración ===
 RETENCION = config.get("logs", "retencion")
 POS_X = config.getint("widget", "posicion_x")
 POS_Y = config.getint("widget", "posicion_y")
@@ -50,13 +46,11 @@ COLOR_FONDO = config.get("widget", "color_fondo")
 TRANSPARENCIA = config.getfloat("widget", "transparencia")
 ALINEACION = config.get("widget", "alineacion", fallback="left")
 
-# Intervalos (convertidos a ms)
 INTERVALO_IP_PUERTOS = config.getint("widget", "intervalo_ip_puertos") * 1000
 INTERVALO_RED = config.getint("widget", "intervalo_red") * 1000
 INTERVALO_PROC_SERV = config.getint("widget", "intervalo_proc_serv") * 1000
 INTERVALO_SISTEMA = config.getint("widget", "intervalo_sistema") * 1000
 
-# === Configuración de logs ===
 LOG_DIR = "logs"
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
@@ -89,86 +83,91 @@ def guardar_registro(texto):
         f.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}]\n{texto}\n---\n")
     limpiar_logs()
 
-# === Variables globales ===
-datos_ip_puertos = ""
-datos_red = ""
-datos_proc_serv = ""
-datos_sistema = ""
+# === Widget PyQt ===
+class RaspKaliWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setGeometry(POS_X, POS_Y, 400, 300)
+        self.setWindowOpacity(TRANSPARENCIA)
 
-# === Funciones de actualización ===
-def actualizar_ip_puertos():
-    global datos_ip_puertos
-    ip = red.obtener_ip_publica()
-    puertos_text = "\n".join(puertos.puertos_abiertos())
-    datos_ip_puertos = f"IP Pública: {ip}\nPuertos abiertos:\n{puertos_text}"
-    refrescar_widget()
-    guardar_registro(datos_ip_puertos)
-    root.after(INTERVALO_IP_PUERTOS, actualizar_ip_puertos)
+        layout = QVBoxLayout()
+        self.label = QLabel("Cargando datos...")
+        self.label.setFont(QFont(FUENTE, TAMANO))
+        self.label.setStyleSheet(f"color: {COLOR_TEXTO}; background-color: {COLOR_FONDO};")
+        if ALINEACION == "center":
+            self.label.setAlignment(Qt.AlignCenter)
+        elif ALINEACION == "right":
+            self.label.setAlignment(Qt.AlignRight)
+        else:
+            self.label.setAlignment(Qt.AlignLeft)
+        layout.addWidget(self.label)
+        self.setLayout(layout)
 
-def actualizar_red():
-    global datos_red
-    interfaces = red.listar_interfaces()
-    velocidades = red.velocidad_por_interfaz()
-    vel_text = ""
-    for iface in interfaces:
-        if iface in velocidades:
-            v = velocidades[iface]
-            vel_text += f"{iface}: ↓ {v['recibidos']} ↑ {v['enviados']}\n"
-    datos_red = f"Redes:\n{vel_text}"
-    refrescar_widget()
-    guardar_registro(datos_red)
-    root.after(INTERVALO_RED, actualizar_red)
+        # Timers
+        self.timer_ip = QTimer(self); self.timer_ip.timeout.connect(self.actualizar_ip_puertos); self.timer_ip.start(INTERVALO_IP_PUERTOS)
+        self.timer_red = QTimer(self); self.timer_red.timeout.connect(self.actualizar_red); self.timer_red.start(INTERVALO_RED)
+        self.timer_proc = QTimer(self); self.timer_proc.timeout.connect(self.actualizar_proc_serv); self.timer_proc.start(INTERVALO_PROC_SERV)
+        self.timer_sys = QTimer(self); self.timer_sys.timeout.connect(self.actualizar_sistema); self.timer_sys.start(INTERVALO_SISTEMA)
 
-def actualizar_proc_serv():
-    global datos_proc_serv
-    top_proc = procesos.procesos_principales(3)
-    proc_text = "\n".join([f"{name} ({cpu}%)" for _, name, cpu in top_proc])
-    servicios_list = ["ssh", "apache2", "mysql"]
-    serv_text = "\n".join([servicios.estado_servicio(s) for s in servicios_list])
-    datos_proc_serv = f"Procesos:\n{proc_text}\n\nServicios:\n{serv_text}"
-    refrescar_widget()
-    guardar_registro(datos_proc_serv)
-    root.after(INTERVALO_PROC_SERV, actualizar_proc_serv)
+        # Datos iniciales
+        self.datos_ip_puertos = ""
+        self.datos_red = ""
+        self.datos_proc_serv = ""
+        self.datos_sistema = ""
 
-def actualizar_sistema():
-    global datos_sistema
-    temp = temperatura.temperatura_cpu()
-    ram = memoria.memoria_ram()
-    disco = memoria.almacenamiento()
-    datos_sistema = f"Temp CPU: {temp}\nRAM: {ram}\nDisco: {disco}"
-    refrescar_widget()
-    guardar_registro(datos_sistema)
-    root.after(INTERVALO_SISTEMA, actualizar_sistema)
+    def refrescar_widget(self):
+        texto = f"""
+=== RaspKali Widget ===
+{self.datos_ip_puertos}
 
-def refrescar_widget():
-    texto = f"""
-    === RaspKali Widget ===
-    {datos_ip_puertos}
+{self.datos_red}
 
-    {datos_red}
+{self.datos_sistema}
 
-    {datos_sistema}
+{self.datos_proc_serv}
+"""
+        self.label.setText(texto)
 
-    {datos_proc_serv}
-    """
-    label.config(text=texto)
+    def actualizar_ip_puertos(self):
+        ip = red.obtener_ip_publica()
+        puertos_text = "\n".join(puertos.puertos_abiertos())
+        self.datos_ip_puertos = f"IP Pública: {ip}\nPuertos abiertos:\n{puertos_text}"
+        self.refrescar_widget()
+        guardar_registro(self.datos_ip_puertos)
 
-# === Ventana estilo widget ===
-root = tk.Tk()
-root.overrideredirect(True)
-root.attributes("-topmost", True)
-root.geometry(f"+{POS_X}+{POS_Y}")
-root.configure(bg=COLOR_FONDO)
-root.attributes("-alpha", TRANSPARENCIA)
+    def actualizar_red(self):
+        interfaces = red.listar_interfaces()
+        velocidades = red.velocidad_por_interfaz()
+        vel_text = ""
+        for iface in interfaces:
+            if iface in velocidades:
+                v = velocidades[iface]
+                vel_text += f"{iface}: ↓ {v['recibidos']} ↑ {v['enviados']}\n"
+        self.datos_red = f"Redes:\n{vel_text}"
+        self.refrescar_widget()
+        guardar_registro(self.datos_red)
 
-label = tk.Label(root, font=(FUENTE, TAMANO), fg=COLOR_TEXTO, bg=COLOR_FONDO,
-                 justify=ALINEACION, anchor="w")
-label.pack(padx=10, pady=10)
+    def actualizar_proc_serv(self):
+        top_proc = procesos.procesos_principales(3)
+        proc_text = "\n".join([f"{name} ({cpu}%)" for _, name, cpu in top_proc])
+        servicios_list = ["ssh", "apache2", "mysql"]
+        serv_text = "\n".join([servicios.estado_servicio(s) for s in servicios_list])
+        self.datos_proc_serv = f"Procesos:\n{proc_text}\n\nServicios:\n{serv_text}"
+        self.refrescar_widget()
+        guardar_registro(self.datos_proc_serv)
 
-# === Iniciar actualizaciones ===
-actualizar_ip_puertos()
-actualizar_red()
-actualizar_proc_serv()
-actualizar_sistema()
+    def actualizar_sistema(self):
+        temp = temperatura.temperatura_cpu()
+        ram = memoria.memoria_ram()
+        disco = memoria.almacenamiento()
+        self.datos_sistema = f"Temp CPU: {temp}\nRAM: {ram}\nDisco: {disco}"
+        self.refrescar_widget()
+        guardar_registro(self.datos_sistema)
 
-root.mainloop()
+# === Main ===
+app = QApplication(sys.argv)
+widget = RaspKaliWidget()
+widget.show()
+sys.exit(app.exec_())
