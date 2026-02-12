@@ -1,7 +1,7 @@
-RaspKali Widget Monitor (.deb)
+📦 RaspKali Widget Monitor (.deb)
 Este proyecto se distribuye como un paquete Debian (.deb) para instalarse fácilmente en sistemas basados en Debian/Ubuntu/Kali.
 
-Prerrequisitos para empaquetado
+🔧 Prerrequisitos para empaquetado
 Antes de generar el paquete .deb, asegúrate de tener instaladas las siguientes herramientas:
 
 dpkg-deb → construcción de paquetes .deb
@@ -16,7 +16,7 @@ Instalación de herramientas
 bash
 sudo apt update
 sudo apt install dpkg-dev fakeroot build-essential lintian -y
-Estructura del paquete
+📂 Estructura del paquete
 La estructura recomendada es:
 
 Código
@@ -46,7 +46,7 @@ raspkali-widget/
         └── doc/
             └── raspkali-widget/
                 └── README.md
-Archivo control
+📑 Archivo control
 Ejemplo de DEBIAN/control:
 
 text
@@ -60,9 +60,11 @@ Maintainer: Tu Nombre <tuemail@example.com>
 Description: RaspKali Widget Monitor
  Un widget flotante para monitorizar CPU, RAM, disco, red y servicios en Raspberry Pi con Kali Linux.
  Implementado en PyQt5, configurable mediante config.ini y con gestión de logs automática.
-Explicación de config.ini
-El archivo config.ini define cómo se comporta el widget. Se instala en /etc/raspkali-widget/config.ini.
+⚙️ Explicación de config.ini
+El archivo config.ini define cómo se comporta el widget. Se instala en:
 
+Código
+/etc/raspkali-widget/config.ini
 Secciones y parámetros
 [logs]
 
@@ -93,7 +95,7 @@ intervalo_proc_serv: segundos entre actualizaciones de procesos y servicios.
 
 intervalo_sistema: segundos entre actualizaciones de CPU, RAM y disco.
 
-Construcción del paquete
+🛠️ Construcción del paquete
 Crear la estructura de directorios como se muestra arriba.
 
 Copiar los archivos en sus rutas correspondientes.
@@ -110,10 +112,13 @@ Verificar con lintian:
 
 bash
 lintian raspkali-widget.deb
-Instalación del paquete
+🚀 Instalación del paquete
 En cualquier sistema Debian/Ubuntu/Kali:
 
 bash
+sudo dpkg -i raspkali-widget.deb
+sudo apt-get install -f
+Esto instalará el widget en el sistema con sus dependencias y rutas correctas.
 sudo dpkg -i raspkali-widget.deb
 sudo apt-get install -f
 Esto instalará el widget en el sistema con sus dependencias y rutas correctas.
