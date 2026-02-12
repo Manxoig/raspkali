@@ -1,38 +1,4 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>RaspKali Widget Monitor (.deb)</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f8f9fa;
-      color: #212529;
-      line-height: 1.6;
-      margin: 20px;
-    }
-    h1, h2, h3 {
-      color: #0d6efd;
-    }
-    pre {
-      background-color: #212529;
-      color: #f8f9fa;
-      padding: 10px;
-      border-radius: 5px;
-      overflow-x: auto;
-    }
-    code {
-      background-color: #e9ecef;
-      padding: 2px 4px;
-      border-radius: 3px;
-    }
-    .section {
-      margin-bottom: 30px;
-    }
-    ul {
-      list-style-type: "✔ ";
-    }
-  </style>
+
 </head>
 <body>
 
