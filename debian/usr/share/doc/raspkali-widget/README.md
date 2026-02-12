@@ -1,26 +1,61 @@
-📦 RaspKali Widget Monitor (.deb)
-Este proyecto se distribuye como un paquete Debian (.deb) para instalarse fácilmente en sistemas basados en Debian/Ubuntu/Kali.
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>RaspKali Widget Monitor (.deb)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f9fa;
+      color: #212529;
+      line-height: 1.6;
+      margin: 20px;
+    }
+    h1, h2, h3 {
+      color: #0d6efd;
+    }
+    pre {
+      background-color: #212529;
+      color: #f8f9fa;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    code {
+      background-color: #e9ecef;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    ul {
+      list-style-type: "✔ ";
+    }
+  </style>
+</head>
+<body>
 
-🔧 Prerrequisitos para empaquetado
-Antes de generar el paquete .deb, asegúrate de tener instaladas las siguientes herramientas:
+  <h1>📦 RaspKali Widget Monitor (.deb)</h1>
+  <p>Este proyecto se distribuye como un <strong>paquete Debian (.deb)</strong> para instalarse fácilmente en sistemas basados en <strong>Debian/Ubuntu/Kali</strong>.</p>
 
-dpkg-deb → construcción de paquetes .deb
+  <div class="section">
+    <h2>🔧 Prerrequisitos para empaquetado</h2>
+    <p>Antes de generar el paquete <code>.deb</code>, asegúrate de tener instaladas las siguientes herramientas:</p>
+    <ul>
+      <li><strong>dpkg-deb</strong> → construcción de paquetes .deb</li>
+      <li><strong>fakeroot</strong> → simular permisos de root durante la construcción</li>
+      <li><strong>build-essential</strong> → compiladores y utilidades básicas</li>
+      <li><strong>lintian</strong> → verificación de calidad del paquete</li>
+    </ul>
+    <h3>Instalación de herramientas</h3>
+    <pre><code>sudo apt update
+sudo apt install dpkg-dev fakeroot build-essential lintian -y</code></pre>
+  </div>
 
-fakeroot → simular permisos de root durante la construcción
-
-build-essential → compiladores y utilidades básicas
-
-lintian → verificación de calidad del paquete
-
-Instalación de herramientas
-bash
-sudo apt update
-sudo apt install dpkg-dev fakeroot build-essential lintian -y
-📂 Estructura del paquete
-La estructura recomendada es:
-
-Código
-raspkali-widget/
+  <div class="section">
+    <h2>📂 Estructura del paquete</h2>
+    <pre><code>raspkali-widget/
 ├── DEBIAN/
 │   └── control
 ├── usr/
@@ -45,80 +80,76 @@ raspkali-widget/
     └── share/
         └── doc/
             └── raspkali-widget/
-                └── README.md
-📑 Archivo control
-Ejemplo de DEBIAN/control:
+                └── README.md</code></pre>
+  </div>
 
-text
-Package: raspkali-widget
+  <div class="section">
+    <h2>📑 Archivo <code>control</code></h2>
+    <pre><code>Package: raspkali-widget
 Version: 1.0
 Section: utils
 Priority: optional
 Architecture: all
 Depends: python3, python3-psutil, python3-requests, python3-pyqt5, lm-sensors, curl
-Maintainer: Tu Nombre <tuemail@example.com>
+Maintainer: Tu Nombre &lt;tuemail@example.com&gt;
 Description: RaspKali Widget Monitor
  Un widget flotante para monitorizar CPU, RAM, disco, red y servicios en Raspberry Pi con Kali Linux.
- Implementado en PyQt5, configurable mediante config.ini y con gestión de logs automática.
-⚙️ Explicación de config.ini
-El archivo config.ini define cómo se comporta el widget. Se instala en:
+ Implementado en PyQt5, configurable mediante config.ini y con gestión de logs automática.</code></pre>
+  </div>
 
-Código
-/etc/raspkali-widget/config.ini
-Secciones y parámetros
-[logs]
+  <div class="section">
+    <h2>⚙️ Explicación de <code>config.ini</code></h2>
+    <p>El archivo <code>config.ini</code> define cómo se comporta el widget. Se instala en:</p>
+    <pre><code>/etc/raspkali-widget/config.ini</code></pre>
 
-retencion: controla cuánto tiempo se conservan los logs.
-Valores permitidos: dia, semana, mes.
+    <h3>Secciones y parámetros</h3>
+    <ul>
+      <li><strong>[logs]</strong>
+        <ul>
+          <li><code>retencion</code>: controla cuánto tiempo se conservan los logs. Valores: <code>dia</code>, <code>semana</code>, <code>mes</code>.</li>
+        </ul>
+      </li>
+      <li><strong>[widget]</strong>
+        <ul>
+          <li><code>posicion_x</code>, <code>posicion_y</code>: coordenadas en pantalla.</li>
+          <li><code>fuente</code>: nombre de la fuente (ej. Consolas).</li>
+          <li><code>tamano_fuente</code>: tamaño de la fuente en puntos.</li>
+          <li><code>color_texto</code>: color del texto (nombre o hex).</li>
+          <li><code>color_fondo</code>: color de fondo.</li>
+          <li><code>transparencia</code>: valor entre 0.0 y 1.0.</li>
+          <li><code>alineacion</code>: alineación del texto (left, center, right).</li>
+          <li><code>intervalo_ip_puertos</code>: segundos entre actualizaciones de IP y puertos.</li>
+          <li><code>intervalo_red</code>: segundos entre actualizaciones de red.</li>
+          <li><code>intervalo_proc_serv</code>: segundos entre actualizaciones de procesos y servicios.</li>
+          <li><code>intervalo_sistema</code>: segundos entre actualizaciones de CPU, RAM y disco.</li>
+        </ul>
+      </li>
+    </ul>
+  </div>
 
-[widget]
+  <div class="section">
+    <h2>🛠️ Construcción del paquete</h2>
+    <ol>
+      <li>Crear la estructura de directorios como se muestra arriba.</li>
+      <li>Copiar los archivos en sus rutas correspondientes.</li>
+      <li>Dar permisos de ejecución al script principal:
+        <pre><code>chmod 755 usr/local/bin/ventana.py</code></pre>
+      </li>
+      <li>Construir el paquete:
+        <pre><code>dpkg-deb --build raspkali-widget</code></pre>
+      </li>
+      <li>Verificar con lintian:
+        <pre><code>lintian raspkali-widget.deb</code></pre>
+      </li>
+    </ol>
+  </div>
 
-posicion_x, posicion_y: coordenadas en pantalla donde aparece el widget.
+  <div class="section">
+    <h2>🚀 Instalación del paquete</h2>
+    <pre><code>sudo dpkg -i raspkali-widget.deb
+sudo apt-get install -f</code></pre>
+    <p>Esto instalará el widget en el sistema con sus dependencias y rutas correctas.</p>
+  </div>
 
-fuente: nombre de la fuente usada (ej. Consolas).
-
-tamano_fuente: tamaño de la fuente en puntos.
-
-color_texto: color del texto (nombre o código hex).
-
-color_fondo: color de fondo del widget.
-
-transparencia: valor entre 0.0 y 1.0 (0 = transparente, 1 = opaco).
-
-alineacion: alineación del texto (left, center, right).
-
-intervalo_ip_puertos: segundos entre actualizaciones de IP y puertos.
-
-intervalo_red: segundos entre actualizaciones de red.
-
-intervalo_proc_serv: segundos entre actualizaciones de procesos y servicios.
-
-intervalo_sistema: segundos entre actualizaciones de CPU, RAM y disco.
-
-🛠️ Construcción del paquete
-Crear la estructura de directorios como se muestra arriba.
-
-Copiar los archivos en sus rutas correspondientes.
-
-Dar permisos de ejecución al script principal:
-
-bash
-chmod 755 usr/local/bin/ventana.py
-Construir el paquete:
-
-bash
-dpkg-deb --build raspkali-widget
-Verificar con lintian:
-
-bash
-lintian raspkali-widget.deb
-🚀 Instalación del paquete
-En cualquier sistema Debian/Ubuntu/Kali:
-
-bash
-sudo dpkg -i raspkali-widget.deb
-sudo apt-get install -f
-Esto instalará el widget en el sistema con sus dependencias y rutas correctas.
-sudo dpkg -i raspkali-widget.deb
-sudo apt-get install -f
-Esto instalará el widget en el sistema con sus dependencias y rutas correctas.
+</body>
+</html>
