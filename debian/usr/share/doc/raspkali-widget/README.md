@@ -1,114 +1,119 @@
-RaspKali Widget Monitor
-Un sistema de monitorización ligera para Kali Linux en Raspberry Pi, que muestra información crítica del sistema en un widget flotante siempre visible en el escritorio. Ahora implementado con PyQt5 para un estilo más moderno y configurable.
+RaspKali Widget Monitor (.deb)
+Este proyecto se distribuye como un paquete Debian (.deb) para instalarse fácilmente en sistemas basados en Debian/Ubuntu/Kali.
 
-Prerrequisitos
-Antes de instalar y ejecutar el widget, asegúrate de cumplir con lo siguiente:
+Prerrequisitos para empaquetado
+Antes de generar el paquete .deb, asegúrate de tener instaladas las siguientes herramientas:
 
-Sistema operativo: Kali Linux (adaptado para Raspberry Pi)
+dpkg-deb → construcción de paquetes .deb
 
-Hardware recomendado: Raspberry Pi 3 o superior (mejor rendimiento en Pi 4)
+fakeroot → simular permisos de root durante la construcción
 
-Entorno gráfico: cualquier entorno que soporte aplicaciones PyQt5 (XFCE, LXDE, GNOME, etc.)
+build-essential → compiladores y utilidades básicas
 
-Python: versión 3.8 o superior
+lintian → verificación de calidad del paquete
 
-Dependencias de Python:
-
-psutil → estadísticas de CPU, RAM, disco y red
-
-requests → obtener IP pública y datos externos
-
-PyQt5 → interfaz gráfica moderna
-
-Paquetes adicionales del sistema:
-
-lm-sensors → lectura de temperatura CPU
-
-systemd → estado de servicios
-
-curl → alternativa para IP pública
-
-Instalación de dependencias
+Instalación de herramientas
 bash
 sudo apt update
-sudo apt install python3 python3-pip lm-sensors curl -y
-pip3 install psutil requests PyQt5
-Configuración
-Toda la configuración se realiza en el archivo config.ini.
+sudo apt install dpkg-dev fakeroot build-essential lintian -y
+Estructura del paquete
+La estructura recomendada es:
 
-Ejemplo de config.ini
-ini
+Código
+raspkali-widget/
+├── DEBIAN/
+│   └── control
+├── usr/
+│   ├── local/
+│   │   └── bin/
+│   │       └── ventana.py
+│   └── lib/
+│       └── raspkali-widget/
+│           ├── memoria.py
+│           ├── procesos.py
+│           ├── puertos.py
+│           ├── red.py
+│           ├── servicios.py
+│           └── temperatura.py
+├── etc/
+│   └── raspkali-widget/
+│       └── config.ini
+├── var/
+│   └── log/
+│       └── raspkali-widget/
+└── usr/
+    └── share/
+        └── doc/
+            └── raspkali-widget/
+                └── README.md
+Archivo control
+Ejemplo de DEBIAN/control:
+
+text
+Package: raspkali-widget
+Version: 1.0
+Section: utils
+Priority: optional
+Architecture: all
+Depends: python3, python3-psutil, python3-requests, python3-pyqt5, lm-sensors, curl
+Maintainer: Tu Nombre <tuemail@example.com>
+Description: RaspKali Widget Monitor
+ Un widget flotante para monitorizar CPU, RAM, disco, red y servicios en Raspberry Pi con Kali Linux.
+ Implementado en PyQt5, configurable mediante config.ini y con gestión de logs automática.
+Explicación de config.ini
+El archivo config.ini define cómo se comporta el widget. Se instala en /etc/raspkali-widget/config.ini.
+
+Secciones y parámetros
 [logs]
-# Opciones permitidas: dia, semana, mes
-retencion = semana
+
+retencion: controla cuánto tiempo se conservan los logs.
+Valores permitidos: dia, semana, mes.
 
 [widget]
-posicion_x = 1200
-posicion_y = 50
-fuente = Consolas
-tamano_fuente = 14
-color_texto = #00FF00
-color_fondo = #000000
-transparencia = 0.85
-alineacion = left
 
-# Intervalos en segundos
-intervalo_ip_puertos = 60
-intervalo_red = 5
-intervalo_proc_serv = 300
-intervalo_sistema = 5
-Validación de configuración
-El programa valida config.ini antes de arrancar.
-Si contiene valores inválidos o faltantes, muestra un mensaje de error en consola y se detiene.
+posicion_x, posicion_y: coordenadas en pantalla donde aparece el widget.
 
-Validaciones:
+fuente: nombre de la fuente usada (ej. Consolas).
 
-retencion debe ser dia, semana o mes.
+tamano_fuente: tamaño de la fuente en puntos.
 
-Intervalos deben ser enteros positivos (en segundos).
+color_texto: color del texto (nombre o código hex).
 
-transparencia debe estar entre 0.0 y 1.0.
+color_fondo: color de fondo del widget.
 
-Fuente, colores y posición deben ser valores válidos para el sistema.
+transparencia: valor entre 0.0 y 1.0 (0 = transparente, 1 = opaco).
 
-Intervalos de actualización
-IP pública y puertos abiertos → cada 60 segundos
+alineacion: alineación del texto (left, center, right).
 
-Redes (interfaces y tráfico) → cada 5 segundos
+intervalo_ip_puertos: segundos entre actualizaciones de IP y puertos.
 
-Procesos y servicios críticos → cada 5 minutos
+intervalo_red: segundos entre actualizaciones de red.
 
-Temperatura CPU, RAM y disco → cada 5 segundos
+intervalo_proc_serv: segundos entre actualizaciones de procesos y servicios.
 
-Gestión de logs
-Los registros se guardan en la carpeta logs/ con un archivo por hora (YYYY-MM-DD-HH.log).
+intervalo_sistema: segundos entre actualizaciones de CPU, RAM y disco.
 
-Cada archivo abarca 60 minutos de datos.
+Construcción del paquete
+Crear la estructura de directorios como se muestra arriba.
 
-Cada entrada incluye una marca de tiempo y se separa con ---.
+Copiar los archivos en sus rutas correspondientes.
 
-Los archivos más antiguos se eliminan automáticamente según la política configurada en config.ini.
-
-Ejecución
-Dentro de la carpeta del proyecto:
+Dar permisos de ejecución al script principal:
 
 bash
-python3 ventana.py
-El widget se abrirá y mostrará la información del sistema en tiempo real, flotando sobre el escritorio con estilo moderno gracias a PyQt5.
+chmod 755 usr/local/bin/ventana.py
+Construir el paquete:
 
-Autostart (opcional)
-Para que el widget se ejecute automáticamente al iniciar el sistema:
+bash
+dpkg-deb --build raspkali-widget
+Verificar con lintian:
 
-Crea el archivo ~/.config/autostart/raspkali-widget.desktop
+bash
+lintian raspkali-widget.deb
+Instalación del paquete
+En cualquier sistema Debian/Ubuntu/Kali:
 
-Contenido:
-
-ini
-[Desktop Entry]
-Type=Application
-Exec=python3 /ruta/al/proyecto/ventana.py
-Hidden=false
-NoDisplay=false
-X-GNOME-Autostart-enabled=true
-Name=RaspKali Widget
-Comment=Monitor ligero para Raspberry Pi con PyQt5
+bash
+sudo dpkg -i raspkali-widget.deb
+sudo apt-get install -f
+Esto instalará el widget en el sistema con sus dependencias y rutas correctas.
