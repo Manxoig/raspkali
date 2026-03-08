@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./debian/usr/lib",
+        "./raspkali/debian/usr/lib"
+    ]
+}
