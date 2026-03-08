@@ -4,7 +4,7 @@ import configparser
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QVBoxLayout
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QFont, QColor, QPalette
-from utils import red, memoria, temperatura, procesos, servicios, puertos
+from raspkali_widget import red, memoria, temperatura, procesos, servicios, puertos
 
 # === Leer configuración ===
 config = configparser.ConfigParser()
