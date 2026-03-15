@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=RaspKali Monitor
+Comment=Widget de información del sistema
+Exec=/usr/bin/raspkali-widget
+Icon=raspkali-icon
+Terminal=false
+Type=Application
+Categories=System;Monitor;

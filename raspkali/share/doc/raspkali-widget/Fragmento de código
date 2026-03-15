@@ -1,7 +1,7 @@
 Source: raspkali-widget
 Section: utils
 Priority: optional
-Maintainer: Tu Nombre <tu@email.com>
+Maintainer: ManChoi Gomez manchoig@gmail.com
 Build-Depends: debhelper-compat (= 13), dh-python, python3-all, python3-setuptools
 Standards-Version: 4.6.2
 
