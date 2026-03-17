@@ -91,3 +91,20 @@ El widget se configura mediante `config.ini` en `/etc/raspkali-widget/`. Ver el 
 ## Uso en el Código Principal
 
 El script `ventana.py` importa estos módulos y actualiza la interfaz cada cierto intervalo definido en `config.ini`. Los datos se muestran en una ventana flotante sin bordes, con transparencia y colores configurables.
+
+## Tests
+
+Se incluyen tests unitarios para verificar la funcionalidad de cada módulo. Los tests usan `unittest` y mocks para simular llamadas al sistema.
+
+Para ejecutar los tests en un sistema Linux con las dependencias instaladas:
+```
+python3 run_tests.py
+```
+
+Los tests cubren:
+- Retornos de tipos correctos.
+- Manejo de errores (excepciones).
+- Formatos de salida esperados.
+- Mocks para llamadas externas (subprocess, requests).
+- **Tests de lógica sin UI**: `test_ventana_logic.py` valida los métodos de actualización en `ventana.py` sin crear la interfaz gráfica.
+- **Test general**: `test_general.py` verifica importaciones y existencia de funciones clave.
