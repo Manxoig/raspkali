@@ -102,6 +102,16 @@ Description: RaspKali Widget Monitor
 
   <div style="margin-bottom:40px;">
     <h2 style="color:#00ff7f;">🛠️ Construcción del paquete</h2>
+    <p>Usa el <code>Makefile</code> para automatizar la construcción:</p>
+    <pre style="background-color:#1e1e1e; color:#00ff7f; padding:12px; border-radius:5px;">
+make build    # Construir raspkali-widget.deb
+make check    # Verificar con lintian
+make test     # Ejecutar tests
+make all      # Todo lo anterior
+make install  # Instalar el paquete
+make clean    # Limpiar
+    </pre>
+    <p>O manualmente:</p>
     <ol>
       <li>Crear la estructura de directorios como se muestra arriba.</li>
       <li>Copiar los archivos en sus rutas correspondientes.</li>
