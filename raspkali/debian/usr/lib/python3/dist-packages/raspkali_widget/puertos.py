@@ -1,7 +1,10 @@
 import psutil
 
 def puertos_abiertos():
-    conexiones = psutil.net_connections(kind='inet')
+    try:
+        conexiones = psutil.net_connections(kind='inet')
+    except psutil.AccessDenied:
+        return ["Sin permiso"]
     abiertos = []
     for c in conexiones:
         if c.status == 'LISTEN':

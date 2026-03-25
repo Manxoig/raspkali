@@ -1,6 +1,6 @@
 # Documentación de la API - RaspKali Widget
 
-Esta documentación describe los módulos y funciones del paquete `widget`, utilizado por el RaspKali Widget para monitorear el sistema en tiempo real.
+Esta documentación describe los módulos y funciones del paquete `raspkali_widget`, utilizado por el RaspKali Widget para monitorear el sistema en tiempo real.
 
 ## Módulo `memoria`
 
@@ -51,8 +51,8 @@ Proporciona datos sobre la red y conectividad.
 - **Dependencias**: `psutil`.
 
 ### `velocidad_por_interfaz()`
-- **Descripción**: Obtiene estadísticas de bytes enviados y recibidos por interfaz.
-- **Retorno**: Diccionario `{"interfaz": {"enviados": int, "recibidos": int}, ...}`.
+- **Descripción**: Obtiene la velocidad de red en bytes/segundo por interfaz. La primera llamada inicializa el estado; las siguientes retornan valores formateados.
+- **Retorno**: Diccionario `{"interfaz": {"enviados": str, "recibidos": str}, ...}` (ej. `"1.5 KB/s"`). La primera llamada retorna `"..."` mientras se toman las mediciones iniciales.
 - **Dependencias**: `psutil`.
 
 ## Módulo `servicios`
@@ -86,11 +86,11 @@ El widget se configura mediante `config.ini` en `/etc/raspkali-widget/`. Ver el 
 - requests
 - PyQt5
 - lm-sensors (para temperatura)
-- curl (para IP pública)
+- requests (para IP pública, opcional — desactivado por defecto)
 
 ## Uso en el Código Principal
 
-El script `ventana.py` importa estos módulos y actualiza la interfaz cada cierto intervalo definido en `config.ini`. Los datos se muestran en una ventana flotante sin bordes, con transparencia y colores configurables.
+El ejecutable `/usr/bin/raspkali-widget` importa estos módulos y actualiza la interfaz en hilos separados (QThread) según los intervalos definidos en `config.ini`. Los datos se muestran en una ventana flotante sin bordes, con transparencia y colores configurables.
 
 ## Tests
 

@@ -3,8 +3,13 @@
 # Conforme a Debian Policy 9.3 (scripts de control de servicios de usuario)
 
 NAME="raspkali-widget"
-EXEC="/usr/bin/ventana.py"
-PIDFILE="${XDG_RUNTIME_DIR:-/tmp}/raspkali-widget.pid"
+EXEC="/usr/bin/raspkali-widget"
+
+if [ -z "$XDG_RUNTIME_DIR" ]; then
+    echo "Error: XDG_RUNTIME_DIR no definido — ejecutar desde una sesión de escritorio" >&2
+    exit 1
+fi
+PIDFILE="${XDG_RUNTIME_DIR}/raspkali-widget.pid"
 
 get_pid() {
     [ -f "$PIDFILE" ] && cat "$PIDFILE"

@@ -1,38 +1,42 @@
 import unittest
-import sys
-import os
-from unittest.mock import patch
+from unittest.mock import MagicMock
 
-# Agregar paths
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'debian/usr/local/bin'))
 
-import ventana
+class TestImports(unittest.TestCase):
+    """Verifica que todos los módulos del paquete son importables."""
 
-class TestGeneral(unittest.TestCase):
-    @patch('ventana.configparser.ConfigParser')
-    @patch('ventana.Path')
-    @patch('builtins.open')
-    def test_validar_config_success(self, mock_open, mock_path, mock_config):
-        # Mock config with valid values
-        mock_config_instance = MagicMock()
-        mock_config_instance.get.return_value = 'dia'
-        mock_config_instance.getint.side_effect = [60, 5, 300, 5, 100, 14, 85, 1]
-        mock_config_instance.getfloat.return_value = 0.8
-        mock_config.return_value = mock_config_instance
+    def test_importar_memoria(self):
+        from raspkali_widget import memoria
+        self.assertTrue(callable(memoria.memoria_ram))
+        self.assertTrue(callable(memoria.almacenamiento))
 
-        # This would normally be called in main, but we can test the function
-        # Since validar_config is not a function, but code in main, perhaps skip
-        # Instead, test that imports work
-        try:
-            from widget import memoria, procesos, puertos, red, servicios, temperatura
-            self.assertTrue(True)  # Imports successful
-        except ImportError:
-            self.fail("Failed to import modules")
+    def test_importar_procesos(self):
+        from raspkali_widget import procesos
+        self.assertTrue(callable(procesos.procesos_principales))
 
-    def test_constants_loaded(self):
-        # Test that constants are defined (assuming config is mocked)
-        # But since config is read at runtime, perhaps just check if modules have functions
-        self.assertTrue(hasattr(ventana, 'find_config'))  # Function exists
+    def test_importar_puertos(self):
+        from raspkali_widget import puertos
+        self.assertTrue(callable(puertos.puertos_abiertos))
+
+    def test_importar_red(self):
+        from raspkali_widget import red
+        self.assertTrue(callable(red.obtener_ip_publica))
+        self.assertTrue(callable(red.listar_interfaces))
+        self.assertTrue(callable(red.velocidad_por_interfaz))
+
+    def test_importar_servicios(self):
+        from raspkali_widget import servicios
+        self.assertTrue(callable(servicios.estado_servicio))
+
+    def test_importar_temperatura(self):
+        from raspkali_widget import temperatura
+        self.assertTrue(callable(temperatura.temperatura_cpu))
+
+    def test_version_definida(self):
+        import raspkali_widget
+        self.assertTrue(hasattr(raspkali_widget, '__version__'))
+        self.assertIsInstance(raspkali_widget.__version__, str)
+
 
 if __name__ == '__main__':
     unittest.main()
