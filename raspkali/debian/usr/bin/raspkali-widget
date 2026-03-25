@@ -185,6 +185,33 @@ def guardar_registro(texto):
         f.write(f"[{ahora.strftime('%Y-%m-%d %H:%M:%S')}]\n{texto}\n---\n")
 
 # -------------------------
+# Helpers de formato visual (HTML para QLabel)
+# -------------------------
+def _s(color, texto):
+    """Envuelve texto en un <span> HTML con el color dado."""
+    return f'<span style="color:{color}">{texto}</span>'
+
+def _barra(pct, largo=10):
+    """Barra de progreso Unicode. ▓ = usado, ░ = libre."""
+    n = min(largo, max(0, int(pct / 100 * largo)))
+    return "▓" * n + "░" * (largo - n)
+
+def _color_pct(pct):
+    """Color semáforo según porcentaje de uso."""
+    if pct >= 85: return "#FF5252"   # rojo — crítico
+    if pct >= 70: return "#FFD54F"   # amarillo — advertencia
+    return "#69F0AE"                  # verde — normal
+
+def _color_temp(cadena):
+    """Color semáforo según temperatura extraída de la cadena."""
+    m = re.search(r'([\d.]+)', cadena)
+    if m:
+        v = float(m.group(1))
+        if v >= 80: return "#FF5252"
+        if v >= 60: return "#FFD54F"
+    return "#69F0AE"
+
+# -------------------------
 # Workers (I/O en hilos separados — no bloquean la UI)
 # -------------------------
 class _IpPuertosWorker(QObject):
@@ -263,13 +290,19 @@ class RaspKaliWidget(QWidget):
         super().__init__()
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setGeometry(POS_X, POS_Y, 400, 300)
+        self.move(POS_X, POS_Y)
+        self.setFixedWidth(400)
         self.setWindowOpacity(TRANSPARENCIA)
 
         layout = QVBoxLayout()
-        self.label = QLabel("Cargando datos...")
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.label = QLabel("Iniciando RaspKali Monitor…")
         self.label.setFont(QFont(FUENTE, TAMANO))
-        self.label.setStyleSheet(f"color: {COLOR_TEXTO}; background-color: {COLOR_FONDO};")
+        self.label.setWordWrap(True)
+        self.label.setStyleSheet(
+            f"color: {COLOR_TEXTO}; background-color: {COLOR_FONDO}; "
+            f"padding: 12px 14px; border-radius: 8px;"
+        )
         if ALINEACION == "center":
             self.label.setAlignment(Qt.AlignCenter)
         elif ALINEACION == "right":
@@ -343,14 +376,140 @@ class RaspKaliWidget(QWidget):
         super().closeEvent(event)
 
     def refrescar_widget(self):
-        texto = (
-            f"\n=== RaspKali Widget ===\n"
-            f"{self.datos_ip_puertos}\n\n"
-            f"{self.datos_red}\n"
-            f"{self.datos_sistema}\n\n"
-            f"{self.datos_proc_serv}\n"
-        )
-        self.label.setText(texto)
+        # Paleta de colores del HUD
+        C_ACCENT = "#00E5FF"   # cian — cabecera principal
+        C_HEADER = "#4FC3F7"   # azul claro — títulos de sección
+        C_LABEL  = "#90A4AE"   # gris azulado — etiquetas
+        C_DIM    = "#546E7A"   # gris oscuro — texto secundario
+
+        ts  = datetime.now().strftime("%H:%M:%S")
+        SEP = _s(C_DIM, "─" * 32)
+
+        # ── Parsear sistema ──────────────────────────────────────
+        temp_val = ram_val = disco_val = ""
+        for ln in self.datos_sistema.split("\n"):
+            if "Temp CPU:" in ln:
+                temp_val = ln.split(":", 1)[1].strip()
+            elif "RAM:" in ln:
+                ram_val = ln.split(":", 1)[1].strip()
+            elif "Disco:" in ln:
+                disco_val = ln.split(":", 1)[1].strip()
+
+        temp_color = _color_temp(temp_val)
+
+        m = re.search(r'([\d.]+)%', ram_val)
+        ram_pct   = float(m.group(1)) if m else 0
+        ram_color = _color_pct(ram_pct)
+
+        m = re.search(r'([\d.]+)%', disco_val)
+        disco_pct   = float(m.group(1)) if m else 0
+        disco_color = _color_pct(disco_pct)
+
+        # ── Parsear red ──────────────────────────────────────────
+        red_lineas = [
+            ln.strip() for ln in self.datos_red.split("\n")
+            if ln.strip() and not ln.startswith("Redes:")
+        ]
+
+        # ── Parsear IP / puertos ─────────────────────────────────
+        ip_val      = "—"
+        puertos_vals = []
+        in_puertos  = False
+        for ln in self.datos_ip_puertos.split("\n"):
+            if "IP Pública:" in ln:
+                ip_val = ln.split(":", 1)[1].strip()
+            elif "Puertos abiertos:" in ln:
+                in_puertos = True
+            elif in_puertos and ln.strip():
+                puertos_vals.append(ln.strip())
+
+        # ── Parsear procesos y servicios ─────────────────────────
+        proc_vals = []
+        serv_vals = []
+        seccion   = None
+        for ln in self.datos_proc_serv.split("\n"):
+            if ln.startswith("Procesos:"):
+                seccion = "proc"
+            elif ln.startswith("Servicios:"):
+                seccion = "serv"
+            elif seccion == "proc" and ln.strip():
+                proc_vals.append(ln.strip())
+            elif seccion == "serv" and ln.strip():
+                serv_vals.append(ln.strip())
+
+        # ── Construir HTML ───────────────────────────────────────
+        L = []
+
+        # Cabecera
+        L += [
+            f'{_s(C_ACCENT, "● RaspKali Monitor")}'
+            f'&nbsp;&nbsp;{_s(C_DIM, ts)}',
+            SEP,
+            "",
+        ]
+
+        # Sección: Sistema
+        L += [
+            _s(C_HEADER, "▸ SISTEMA"),
+            f'&nbsp;&nbsp;{_s(C_LABEL, "Temp&nbsp; ")}'
+            f'{_s(temp_color, temp_val or "N/A")}',
+            f'&nbsp;&nbsp;{_s(C_LABEL, "RAM&nbsp;&nbsp; ")}'
+            f'{_s(ram_color, _barra(ram_pct))}'
+            f'&nbsp;{_s(ram_color, ram_val or "N/A")}',
+            f'&nbsp;&nbsp;{_s(C_LABEL, "Disco&nbsp;")}'
+            f'{_s(disco_color, _barra(disco_pct))}'
+            f'&nbsp;{_s(disco_color, disco_val or "N/A")}',
+            "",
+        ]
+
+        # Sección: Red local
+        if red_lineas:
+            L.append(_s(C_HEADER, "▸ RED"))
+            for rl in red_lineas:
+                L.append(f'&nbsp;&nbsp;{_s(C_DIM, rl)}')
+            L.append("")
+
+        # Sección: Red externa / puertos
+        ip_color = (C_ACCENT
+                    if ip_val not in ("desactivado", "N/A", "No disponible", "—")
+                    else C_DIM)
+        L += [
+            _s(C_HEADER, "▸ RED EXTERNA"),
+            f'&nbsp;&nbsp;{_s(C_LABEL, "IP&nbsp;&nbsp; ")}'
+            f'{_s(ip_color, ip_val)}',
+        ]
+        for pv in puertos_vals:
+            L.append(f'&nbsp;&nbsp;{_s(C_DIM, pv)}')
+        L.append("")
+
+        # Sección: Servicios
+        if serv_vals:
+            L.append(_s(C_HEADER, "▸ SERVICIOS"))
+            for sv in serv_vals:
+                activo = ": active" in sv
+                nombre = sv.split(":")[0].strip()
+                dot    = _s("#69F0AE", "●") if activo else _s("#FF5252", "○")
+                txt    = _s("#69F0AE", "activo") if activo else _s("#FF5252", "inactivo")
+                L.append(f'&nbsp;&nbsp;{dot}&nbsp;{_s(C_LABEL, nombre)}'
+                         f'&nbsp;—&nbsp;{txt}')
+            L.append("")
+
+        # Sección: Procesos
+        if proc_vals:
+            L.append(_s(C_HEADER, "▸ PROCESOS"))
+            for pv in proc_vals:
+                m2 = re.search(r'\(([\d.]+)%\)', pv)
+                if m2:
+                    pct2    = float(m2.group(1))
+                    c2      = _color_pct(pct2)
+                    nombre2 = pv[:pv.find("(")].strip()
+                    L.append(f'&nbsp;&nbsp;{_s(C_LABEL, nombre2)}'
+                             f'&nbsp;{_s(c2, m2.group(0))}')
+                else:
+                    L.append(f'&nbsp;&nbsp;{_s(C_DIM, pv)}')
+
+        self.label.setText("<br/>".join(L))
+        self.adjustSize()
 
     def _on_ip_puertos(self, ip, puertos_text):
         self.datos_ip_puertos = f"IP Pública: {ip}\nPuertos abiertos:\n{puertos_text}"

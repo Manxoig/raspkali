@@ -88,16 +88,18 @@ class TestCallbacksWidget(unittest.TestCase):
 
     def test_refrescar_widget_formato(self):
         w = self._make_widget()
-        w.datos_ip_puertos = "IP: test"
-        w.datos_red = "Red: test"
-        w.datos_sistema = "Sys: test"
-        w.datos_proc_serv = "Proc: test"
+        w.datos_ip_puertos = "IP Pública: 1.2.3.4\nPuertos abiertos:\nPuerto 22 (SOCK_STREAM)"
+        w.datos_red = "Redes:\neth0: ↓ 1.0 KB/s ↑ 512 B/s\n"
+        w.datos_sistema = "Temp CPU: +45.0°C\nRAM: 60% (512MB / 1024MB)\nDisco: 75% usado"
+        w.datos_proc_serv = "Procesos:\npython (15.5%)\n\nServicios:\nssh: active"
         ventana.RaspKaliWidget.refrescar_widget(w)
         w.label.setText.assert_called_once()
         texto = w.label.setText.call_args[0][0]
-        self.assertIn('RaspKali Widget', texto)
-        self.assertIn('IP: test', texto)
-        self.assertIn('Red: test', texto)
+        self.assertIn('RaspKali Monitor', texto)
+        self.assertIn('1.2.3.4', texto)
+        self.assertIn('eth0', texto)
+        self.assertIn('45.0', texto)
+        self.assertIn('ssh', texto)
 
 
 if __name__ == '__main__':
