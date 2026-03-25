@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=RaspKali Monitor
+Comment=Widget de monitoreo del sistema
+Exec=/usr/bin/raspkali-widget-ctl start
+Terminal=false
+Type=Application
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Delay=5

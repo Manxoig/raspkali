@@ -1,10 +1,13 @@
 Package: raspkali-widget
-Version: 1.0
+Version: 1.0-1
 Section: utils
 Priority: optional
 Architecture: all
-Depends: python3, python3-psutil, python3-requests, python3-pyqt5, lm-sensors, curl
-Maintainer: Tu Nombre <tuemail@example.com>
-Description: RaspKali Widget Monitor
- Un widget flotante para monitorizar CPU, RAM, disco, red y servicios en Raspberry Pi con Kali Linux.
- Implementado en PyQt5, configurable mediante config.ini y con gestión de logs automática.
+Standards-Version: 4.6.2
+Depends: python3, python3-psutil, python3-requests, python3-pyqt5, lm-sensors
+Maintainer: ManChoi Gomez <manchoig@gmail.com>
+Description: Floating system monitor widget for Raspberry Pi
+ A frameless floating widget that displays real-time system metrics
+ including CPU temperature, RAM, disk usage, network interfaces,
+ open ports, and service status. Configurable via config.ini with
+ automatic log management and configurable retention policy.

@@ -1,0 +1,9 @@
+raspkali-widget (1.0-1) unstable; urgency=low
+
+  * Initial Debian packaging release.
+  * Floating PyQt5 widget for real-time system monitoring.
+  * Configurable via /etc/raspkali-widget/config.ini.
+  * Autostart via XDG autostart mechanism.
+  * Process control via raspkali-widget-ctl script.
+
+ -- ManChoi Gomez <manchoig@gmail.com>  Wed, 25 Mar 2026 00:00:00 +0000

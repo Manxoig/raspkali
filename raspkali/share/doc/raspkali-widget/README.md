@@ -91,6 +91,7 @@ Description: RaspKali Widget Monitor
       <li><code>alineacion</code>: alineación del texto (left, center, right).</li>
       <br>
       <li><em>Intervalos de actualización:</em></li>
+      <li><code>obtener_ip_publica</code>: activa o desactiva la consulta de IP pública a <code>ifconfig.me</code>. Valores: <code>true</code> / <code>false</code>. <strong>Por defecto: false.</strong></li>
       <li><code>intervalo_ip_puertos</code>: segundos entre actualizaciones de IP y puertos.</li>
       <li><code>intervalo_red</code>: segundos entre actualizaciones de red.</li>
       <li><code>intervalo_proc_serv</code>: segundos entre actualizaciones de procesos y servicios.</li>
@@ -99,6 +100,18 @@ Description: RaspKali Widget Monitor
   </li>
 </ul>
 
+
+  <div style="margin-bottom:40px;">
+    <h2 style="color:#ff4444;">🔒 Privacidad y datos de red</h2>
+    <p>Este widget puede consultar tu <strong>dirección IP pública</strong> al servicio externo <code>ifconfig.me</code>.</p>
+    <p>Esta función está <strong>desactivada por defecto</strong>. Para activarla, edita <code>/etc/raspkali-widget/config.ini</code>:</p>
+    <pre style="background-color:#1e1e1e; color:#00ff7f; padding:12px; border-radius:5px;">
+[widget]
+obtener_ip_publica = true   # activa consulta a ifconfig.me
+obtener_ip_publica = false  # no realiza ninguna llamada de red (por defecto)
+    </pre>
+    <p><strong>Importante:</strong> al activar esta opción, el sistema enviará periódicamente una solicitud HTTP a <code>https://ifconfig.me</code> desde tu red. Si no necesitas visualizar tu IP pública, mantén la opción en <code>false</code>.</p>
+  </div>
 
   <div style="margin-bottom:40px;">
     <h2 style="color:#00ff7f;">🛠️ Construcción del paquete</h2>
