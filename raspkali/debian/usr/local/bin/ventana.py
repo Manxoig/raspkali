@@ -28,12 +28,7 @@ def find_config():
         print(f"RASPKALI_CONFIG no válido o sin permisos: {p}")
 
     # 2) Rutas candidatas (prioridad)
-    script_dir = Path(__file__).resolve().parent
     candidates = [
-        (script_dir / ".." / "etc" / "raspkali-widget" / "config.ini").resolve(),
-        Path("/workspaces/raspkali/raspkali/debian/etc/raspkali-widget/config.ini").resolve(),
-        Path("/workspaces/raspkali/raspkali/debian/etc/raspkali-widget/get/config.ini").resolve(),
-        Path("raspkali/debian/etc/raspkali-widget/config.ini").resolve(),
         Path("/etc/raspkali-widget/config.ini").resolve(),
     ]
 
